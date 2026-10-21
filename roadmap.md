@@ -1,6 +1,6 @@
 # Roadmap – Tic-tac-toe
 
-**Status: DRAFT – awaiting approval**
+**Status: APPROVED by the user on 2026-10-21**
 
 Each milestone is one or more branches/PRs. A milestone is done when all acceptance criteria are met, tests pass, the code-reviewer approves and the user approves the merge.
 
