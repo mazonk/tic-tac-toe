@@ -190,3 +190,10 @@ _(entry added by github-agent on behalf of github-agent)_
   - `.claude/agents/github-agent.md:14`: after a squash merge, `git diff origin/main origin/<branch> --stat` is only empty if nothing else has landed on `main`. Otherwise it also lists newer `main` changes. Optional fix: also confirm the PR is merged with `gh pr view <n> --json state`, and treat lines that exist only on `main` as fine.
   - `docs/HANDOFF.md` "Only the `main` branch exists" will be true once this PR is merged and its branch deleted. That is acceptable, because the handoff describes the state after merging.
 - **Next step:** The github-agent commits on `chore/post-m0-docs` (no trailers), pushes and opens a PR to `main`. Once the user merges it, the branch is deleted and M1 starts on `feat/m1-game-logic`.
+
+## 2026-10-21 – github-agent – Commit post-M0 docs and open PR to main
+- **Task:** Commit the approved post-M0 doc changes on `chore/post-m0-docs`, push, and open a PR to `main`. Do not merge.
+- **Actions:** `gh auth status` (mazonk, logged in); `git status` showed exactly the expected files (modified `.claude/agents/github-agent.md`, `CLAUDE.md`, `roadmap.md`, `docs/reports/REPORTS.md`; untracked `docs/HANDOFF.md`); staged them by path and committed `08f08f2` "docs: mark M0 done, add handoff and branch rules" (no trailer); appended this entry and committed it; `git push -u origin chore/post-m0-docs`; `gh pr create --base main`.
+- **Result:** Branch `chore/post-m0-docs` pushed, with a PR to `main` open (URL in the github-agent's handoff to Main Claude). Nothing merged.
+- **Issues:** none
+- **Next step:** The user reviews the PR and merges it on GitHub. Afterwards the github-agent checks the merge, deletes `chore/post-m0-docs` locally and on the remote, and M1 starts on `feat/m1-game-logic` from an up-to-date `main`.
