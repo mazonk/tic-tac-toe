@@ -4,11 +4,11 @@
 
 Each milestone is one or more branches/PRs. A milestone is done when all acceptance criteria are met, tests pass, the code-reviewer approves and the user approves the merge.
 
-## M0 – Setup
-- [ ] `git init`, `.gitignore`, initial commit
-- [ ] `package.json` with dev dependencies `vitest`, `@vitest/coverage-v8`, `jsdom`
-- [ ] Scripts: `"test": "vitest run --passWithNoTests"`, `"coverage": "vitest run --coverage"`
-- [ ] GitHub repo created, remote added, `main` pushed
+## M0 – Setup ✅ done 2026-10-21 (PRs #1, #3)
+- [x] `git init`, `.gitignore`, initial commit
+- [x] `package.json` with dev dependencies `vitest`, `@vitest/coverage-v8`, `jsdom` (jsdom pinned to ^26 for Node 24.11)
+- [x] Scripts: `"test": "vitest run --passWithNoTests"`, `"coverage": "vitest run --coverage"`
+- [x] GitHub repo created, remote added, `main` pushed (https://github.com/mazonk/tic-tac-toe)
 
 **Done when:** `npm test` exits 0 (even with zero tests) and `main` is on GitHub.
 
