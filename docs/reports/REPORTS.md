@@ -50,3 +50,10 @@ Newest entries at the bottom. Each agent appends one entry per task using this t
   - github-agent.md:3 — frontmatter `description` (used to route work to the agent) doesn't mention tags/Pages. — Add "tags and GitHub Pages" to it.
   - github-agent.md:25 / CLAUDE.md:33 — the merge happens in a later run, after user approval; that run's report entry can't be committed on the already-merged branch, so it is still left uncommitted for the next branch. — Say that the post-merge report is committed on the next branch, or is only shared in chat.
 - **Next step:** These doc fixes are uncommitted on `main`. Per CLAUDE.md:37 they go through the github-agent on a `chore/setup-docs` branch (together with the pending M0 github-agent entry). The minor notes can be folded in there. Then the user approves roadmap.md and M0 continues.
+
+## 2026-10-21 – github-agent – Commit setup-doc fixes on chore/setup-docs
+- **Task:** Move the approved setup-doc fixes off `main` onto `chore/setup-docs` and commit them; no merge, push or remote.
+- **Actions:** `git switch -c chore/setup-docs` (uncommitted changes carried over); `git status` showed exactly the 5 expected files modified, no untracked files; staged explicitly `CLAUDE.md`, `roadmap.md`, `.claude/agents/github-agent.md`, `.claude/agents/code-reviewer.md`, `docs/reports/REPORTS.md`; committed with no trailer; then appended this entry and committed it separately.
+- **Result:** Commit `e922265` "docs: apply setup review fixes" on `chore/setup-docs`, followed by "docs: add github-agent report". `main` stays at `8c4951b`. Branch left checked out.
+- **Issues:** `gh` CLI not installed and no remote, so nothing pushed and no PR opened. Git warns LF→CRLF conversion (harmless).
+- **Next step:** User installs `gh` (`winget install GitHub.cli`, `gh auth login`) and creates the GitHub repo, so `main` and `chore/setup-docs` can be pushed and a PR opened; the merge into `main` waits for user approval.
