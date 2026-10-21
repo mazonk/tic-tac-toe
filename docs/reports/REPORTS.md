@@ -57,3 +57,81 @@ Newest entries at the bottom. Each agent appends one entry per task using this t
 - **Result:** Commit `e922265` "docs: apply setup review fixes" on `chore/setup-docs`, followed by "docs: add github-agent report". `main` stays at `8c4951b`. Branch left checked out.
 - **Issues:** `gh` CLI not installed and no remote, so nothing pushed and no PR opened. Git warns LF→CRLF conversion (harmless).
 - **Next step:** User installs `gh` (`winget install GitHub.cli`, `gh auth login`) and creates the GitHub repo, so `main` and `chore/setup-docs` can be pushed and a PR opened; the merge into `main` waits for user approval.
+
+## 2026-10-21 – test-agent – M0 local setup: install and zero-test runs
+- **Task:** Run `npm install`, check that `npm test` exits 0 with zero tests (M0 "done when"), check `npm run coverage` with zero tests, report install warnings, `npm audit` and installed versions. No test files, no changes to package.json or src/, no commit.
+- **Actions:** Node v24.11.1, npm 11.6.2. `npm install` (exit 0) – added 155 packages, created `node_modules/` and `package-lock.json`. Ran `npm test`, `npm run coverage`, `npm audit`, `npm ls vitest @vitest/coverage-v8 jsdom`. No tests added or changed.
+- **Result:**
+  - `npm test` → exit **0**: "No test files found, exiting with code 0". M0 criterion met.
+  - `npm run coverage` → exit **1**: "No test files found, exiting with code 1" (the script has no `--passWithNoTests`). The v8 coverage table is still printed (All files 0 %). It will pass once M1 adds tests.
+  - `npm install` → exit 0. `npm audit` → exit 1.
+  - Installed: vitest 3.2.7, @vitest/coverage-v8 3.2.7, jsdom 26.1.0.
+  - Tests: 0 passed / 0 failed / 0 skipped; coverage n/a.
+- **Issues:**
+  - Install warnings (deprecated transitive deps): `whatwg-encoding@3.1.1` (via jsdom), `glob@10.5.0`.
+  - `npm audit`: 4 vulnerabilities (2 moderate, 2 critical), all in the Vitest dev toolchain: `@vitest/mocker` (moderate, path traversal, GHSA-82fw-gwwq-j7x9) → `vitest` and `@vitest/coverage-v8` (moderate via dependency); `tinypool <=2.1.1` (critical, prototype pollution → RCE, GHSA-5gmw-xhrv-c9v3, GHSA-85c8-ppgw-ccpr). The only fix is `npm audit fix --force` → vitest@5.0.5 (major version, breaking). Dev-only, not shipped to the browser. Not changed.
+  - `npm run coverage` fails with zero tests (see above).
+- **Next step:** Main Claude/user decides: (a) accept the coverage exit 1 until M1, or add `--passWithNoTests` to the `coverage` script; (b) whether to upgrade to vitest 5.x (and matching @vitest/coverage-v8) to clear the audit findings, or accept them as dev-only risk. Then code-reviewer, then the github-agent commits `package.json` + `package-lock.json`.
+
+## 2026-10-21 – test-agent – Re-run after upgrade to vitest 5 / jsdom 30
+- **Task:** After Main Claude bumped package.json to vitest ^5.0.5, @vitest/coverage-v8 ^5.0.5 and jsdom ^30.1.3: run `npm install` (updates package-lock.json), check that `npm test` exits 0, report `npm run coverage` exit code (exit 1 with zero tests accepted until M1), `npm audit` (goal 0), warnings and installed versions. No tests, no changes to package.json or src/, no commit.
+- **Actions:** Node v24.11.1, npm 11.6.2. `npm install` (exit 0): added 19, removed 92, changed 35 packages; 83 packages audited; `package-lock.json` updated. Ran `npm test`, `npm run coverage`, `npm audit`, `npm ls vitest @vitest/coverage-v8 jsdom`. No tests added or changed.
+- **Result:**
+  - `npm test` → exit **0**: "RUN v5.0.5 … No test files found, exiting with code 0". M0 criterion still met.
+  - `npm run coverage` → exit **1**: "No test files found, exiting with code 1"; v8 table printed (All files 0 %). Expected and accepted until M1.
+  - `npm audit` → exit 0, **found 0 vulnerabilities**. The 4 earlier findings (`@vitest/mocker`, `tinypool`, vitest, coverage-v8) are gone.
+  - Installed: vitest 5.0.5, @vitest/coverage-v8 5.0.5, jsdom 30.1.3 (all deduped, single copy each).
+  - Tests: 0 passed / 0 failed / 0 skipped; coverage n/a.
+- **Issues:**
+  - No deprecation warnings during install (the earlier `whatwg-encoding` and `glob` warnings are gone).
+  - New `EBADENGINE` warnings: `jsdom@30.1.3`, `@asamuzakjp/css-color@7.1.7`, `@asamuzakjp/dom-selector@10.0.4` and `w3c-xmlserializer@6.0.0` require Node `^22.22.2 || ^24.15.0 || >=26.0.0`; the installed Node is v24.11.1. Install still succeeds and vitest runs, but jsdom 30 has not actually run yet (no tests use the jsdom environment). It may fail on Node 24.11.1 once M1 adds the UI tests.
+- **Next step:** Upgrade Node to ≥ 24.15.0 (e.g. latest 24 LTS) before the M1 UI tests. Or pin jsdom to a version that supports 24.11 (e.g. `^26`, as it was before, which had no audit findings of its own). Optionally add `"engines": { "node": ">=24.15.0" }` to package.json. Then code-reviewer, then the github-agent commits `package.json` + `package-lock.json`.
+
+## 2026-10-21 – code-reviewer – M0 package.json, lockfile and roadmap approval
+- **Task:** Review the uncommitted changes on `chore/setup-docs`: `roadmap.md` status → APPROVED, new `package.json` and `package-lock.json` (M0), new test-agent entries in this file. Advise on splitting the work between `chore/setup-docs` and `chore/m0-setup`. No edits besides this entry, no commit.
+- **Actions:** Read `CLAUDE.md`, `roadmap.md`, `.gitignore`, `package.json`, `package-lock.json` and this file; ran `git status`, `git diff`, `git log`; checked the lockfile with node, ran `npm ls vitest @vitest/coverage-v8 jsdom`, `npm test` and `npm audit` (read-only).
+- **Result:** **APPROVE.**
+  - `package.json` matches roadmap M0 exactly: dev deps `vitest`, `@vitest/coverage-v8`, `jsdom`; scripts `test` = `vitest run --passWithNoTests`, `coverage` = `vitest run --coverage`; `"type": "module"` fits the ES-module rule in CLAUDE.md; `private: true`. Versions are consistent: vitest and coverage-v8 are both ^5.0.5. Pinning jsdom to ^26.1.0 (engines `node >=18`) is correct for Node 24.11.1; vitest 5.0.5 needs `^24.0.0`, so that's fine too.
+  - `package-lock.json`: lockfileVersion 3; root `devDependencies` match `package.json`; resolved vitest 5.0.5, @vitest/coverage-v8 5.0.5, jsdom 26.1.0, each one copy (deduped). No package in the lockfile needs Node ≥24.15.
+  - `node_modules/` is in `.gitignore` and not tracked (0 tracked files).
+  - Re-checked: `npm test` → exit 0 ("No test files found, exiting with code 0"), so the M0 "done when" (local part) is met. `npm audit` → 0 vulnerabilities.
+  - `roadmap.md:3` status change is correct; the user approved.
+- **Issues:**
+  1. `docs/reports/REPORTS.md:75-88` — the latest test-agent entry still describes jsdom 30.1.3 with EBADENGINE warnings and recommends upgrading Node. There is no test-agent entry for the final jsdom ^26 run (0 vulnerabilities, no engine warnings, jsdom smoke test passed), so the log does not match what will be committed. Fix: the test-agent appends a short entry for the jsdom 26 re-run before the github-agent commits. No re-review needed for that.
+  2. (optional, non-blocking) `package.json` — consider `"engines": { "node": ">=24" }` to document the Node 24 rule from CLAUDE.md. Not needed for M0.
+  3. (note) `npm run coverage` exits 1 with zero tests; accepted until M1, as decided.
+- **Branching / commit split (recommendation):**
+  - `roadmap.md` status line → stays on `chore/setup-docs`, as its own commit: `docs: mark roadmap as approved`. This is setup docs and an approval gate, not M0 work. Stage only that file (`git add roadmap.md`).
+  - `package.json`, `package-lock.json` → new branch `chore/m0-setup`. This is a roadmap item and CLAUDE.md requires one item per branch. Commit: `chore: add package.json with vitest, coverage-v8 and jsdom`.
+  - The `REPORTS.md` hunks (both test-agent entries, the missing jsdom-26 test-agent entry and this review) describe the M0 work, so per CLAUDE.md they go on `chore/m0-setup`: `docs: add M0 test and review reports`.
+  - Order: on `chore/setup-docs`, commit `roadmap.md` only → `git switch -c chore/m0-setup` (the uncommitted package files and REPORTS.md come along) → the two commits above. Branching from `chore/setup-docs` makes `chore/m0-setup` a stacked branch, and M0 is not allowed to start before the roadmap approval is in its history. Merge `chore/setup-docs` into `main` first (after user approval), then open/rebase-free merge of `chore/m0-setup` (or retarget its PR to `main` once setup-docs is merged). No trailers on any commit.
+- **Next step:** test-agent appends the jsdom-26 re-run entry → github-agent commits per the split above (no trailers) → user approves merges; M0 is complete once `main` is on GitHub (needs `gh` + remote).
+
+## 2026-10-21 – test-agent – Re-run with jsdom pinned to ^26.1.0
+_(entry added by github-agent on behalf of test-agent)_
+- **Task:** Re-run the M0 install and zero-test checks after jsdom was pinned to `^26.1.0`.
+- **Actions:** `npm install`, `npm test`, `npm audit`; ran a jsdom smoke test (createElement/appendChild/query under `@vitest-environment jsdom`) from the scratchpad and deleted it afterwards. No files in the project changed.
+- **Result:**
+  - `npm install` → exit 0, no `EBADENGINE` warnings.
+  - `npm test` → exit 0 (no test files, `--passWithNoTests`).
+  - `npm audit` → 0 vulnerabilities.
+  - jsdom smoke test → passed 1/1.
+  - Installed: vitest 5.0.5, @vitest/coverage-v8 5.0.5, jsdom 26.1.0; Node 24.11.1, npm 11.6.2.
+- **Issues:** Deprecation warning for `whatwg-encoding@3.1.1` via jsdom 26 (harmless).
+- **Next step:** Ready for M1 tests.
+
+## 2026-10-21 – github-agent – Install gh via winget: failed
+_(entry added by github-agent on behalf of github-agent)_
+- **Task:** Install the GitHub CLI with `winget install GitHub.cli`.
+- **Actions:** Tried to run `winget`.
+- **Result:** Failed. `winget` is not available on this machine (App Installer is missing or not registered). Nothing installed.
+- **Issues:** No `winget`.
+- **Next step:** The user chose the official portable zip instead.
+
+## 2026-10-21 – github-agent – Install gh 2.102.1 from the official portable zip
+_(entry added by github-agent on behalf of github-agent)_
+- **Task:** Install `gh` from the official portable zip.
+- **Actions:** Downloaded the v2.102.1 zip from github.com/cli/cli/releases; verified SHA256 against the release checksums file (843c0dc1…356e9, match); unzipped to `%LOCALAPPDATA%\Programs\gh`; added its `bin` to the user PATH only; deleted the download.
+- **Result:** `gh` 2.102.1 installed. The user has since logged in (`gh auth status`: account mazonk, https, scopes repo, workflow).
+- **Issues:** none
+- **Next step:** User chooses the GitHub repo name and visibility, so the remote can be created and branches pushed.
