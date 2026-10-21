@@ -6,10 +6,11 @@ Each milestone is one or more branches/PRs. A milestone is done when all accepta
 
 ## M0 – Setup
 - [ ] `git init`, `.gitignore`, initial commit
-- [ ] `package.json` with Vitest and `test` / `coverage` scripts
+- [ ] `package.json` with dev dependencies `vitest`, `@vitest/coverage-v8`, `jsdom`
+- [ ] Scripts: `"test": "vitest run --passWithNoTests"`, `"coverage": "vitest run --coverage"`
 - [ ] GitHub repo created, remote added, `main` pushed
 
-**Done when:** `npm test` runs (even with zero tests) and `main` is on GitHub.
+**Done when:** `npm test` exits 0 (even with zero tests) and `main` is on GitHub.
 
 ## M1 – Game logic (`src/game.js`)
 - [ ] Create empty 3×3 board
@@ -35,7 +36,7 @@ Each milestone is one or more branches/PRs. A milestone is done when all accepta
 - [ ] Responsive layout (phone to desktop)
 - [ ] Keyboard play and ARIA labels
 
-**Done when:** it is playable with keyboard only, and it works at 360px width.
+**Done when:** winning cells get a highlight class and the score updates correctly after a win, a draw, and a restart (covered by jsdom tests); the game is playable with keyboard only; and it works at 360px width.
 
 ## M4 – AI opponent (optional)
 - [ ] Mode toggle: 2 players / vs computer
@@ -46,7 +47,7 @@ Each milestone is one or more branches/PRs. A milestone is done when all accepta
 
 ## M5 – Release
 - [ ] README with how to play and run
-- [ ] Deploy to GitHub Pages
-- [ ] Tag `v1.0.0`
+- [ ] Deploy to GitHub Pages (github-agent, after user approval)
+- [ ] Tag `v1.0.0` (github-agent, after user approval)
 
 **Done when:** the game is live at the Pages URL.
