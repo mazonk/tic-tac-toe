@@ -19,7 +19,7 @@ docs/reports/REPORTS.md   agent report log
 - `npm install` – install dev dependencies
 - `npm test` – run Vitest once
 - `npm run coverage` – run tests with coverage
-- `npx serve .` (or open `index.html`) – play the game
+- `npx serve .` – play the game (opening `index.html` directly from disk won't work, because browsers block ES modules loaded over `file://`)
 
 ## Agent workflow (required)
 All work goes through the project agents. The main Claude coordinates and does not skip steps.
@@ -30,6 +30,7 @@ All work goes through the project agents. The main Claude coordinates and does n
    On changes requested, go back to step 1.
 4. **github-agent** creates the branch, commits, pushes, opens the PR, and merges **only after the user approves**.
 5. Every agent appends its report to `docs/reports/REPORTS.md`. The main Claude relays each report to the user in chat.
+   Report entries belong to the branch of the work they describe. The github-agent commits its own report entry on that same branch before the PR is merged, so no entry carries over into the next branch. Exception: the report for a merge itself is written after the branch is merged, so it is committed on the next branch.
 
 ## Rules
 - No work on a milestone until the user has approved `roadmap.md`.
@@ -38,5 +39,5 @@ All work goes through the project agents. The main Claude coordinates and does n
 - **Never add a trailer to commits** – no `Co-Authored-By` or any other attribution lines.
 - PR descriptions end with: `🤖 Generated with [Claude Code](https://claude.com/claude-code)`
 - Never force-push. Never rewrite published history.
-- Stop and ask the user at each approval gate (roadmap approval, PR merge).
+- Stop and ask the user at each approval gate (roadmap approval, PR merge, release tag / GitHub Pages).
 - Keep `src/game.js` free of DOM code so it stays unit-testable.
