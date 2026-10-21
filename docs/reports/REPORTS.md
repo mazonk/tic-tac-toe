@@ -135,3 +135,10 @@ _(entry added by github-agent on behalf of github-agent)_
 - **Result:** `gh` 2.102.1 installed. The user has since logged in (`gh auth status`: account mazonk, https, scopes repo, workflow).
 - **Issues:** none
 - **Next step:** User chooses the GitHub repo name and visibility, so the remote can be created and branches pushed.
+
+## 2026-10-21 – github-agent – Commit roadmap approval and M0 package setup
+- **Task:** Commit the roadmap approval on `chore/setup-docs`, then move the M0 package files and reports to a new `chore/m0-setup` branch, following the code-reviewer's split. No repo, remote, push or merge.
+- **Actions:** `git add roadmap.md` → commit on `chore/setup-docs`; `git switch -c chore/m0-setup`; `git add package.json package-lock.json` → commit; appended the three held reports (test-agent jsdom-26 re-run, gh winget failure, gh portable zip install) → `git add docs/reports/REPORTS.md` → commit; ran `gh auth status`; appended this entry and committed it. All files staged by path, no trailers.
+- **Result:** `chore/setup-docs`: `a002bc7` "docs: mark roadmap as approved". `chore/m0-setup` (stacked on it): `37a5038` "chore: add package.json with vitest, coverage-v8 and jsdom", `a4b694f` "docs: add M0 test, install and review reports", then "docs: add github-agent report". `main` stays at `8c4951b`. Nothing pushed.
+- **Issues:** `gh auth status` lists token scopes `gist, read:org, repo, workflow` (more than the `repo, workflow` noted earlier; harmless). Git warns about LF→CRLF conversion (harmless). `node_modules/` stays ignored and untracked.
+- **Next step:** User chooses the GitHub repo name and visibility. Then create the repo and remote, push `main`, `chore/setup-docs` and `chore/m0-setup`, and open the PRs: setup-docs → main first, then m0-setup (retargeted to `main` after setup-docs is merged). Each merge waits for user approval.
